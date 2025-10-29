@@ -1,0 +1,100 @@
+{
+    "name": "daycry/phpunit-extension-selenium",
+    "description": "A library that allows you to easily use the PHP-Selenium library in your PHPUnit tests.",
+    "keywords": ["phpunit", "php-selenium", "tests", "testing", "selenium", "unit", "http", "recording", "mocking", "attributes"],
+    "license": "MIT",
+    "type": "library",
+    "homepage": "https://github.com/daycry/phpunit-extension-selenium",
+    "support": {
+        "issues": "https://github.com/daycry/phpunit-extension-selenium/issues",
+        "source": "https://github.com/daycry/phpunit-extension-selenium"
+    },
+    "authors": [
+      {
+        "name": "Daycry",
+        "role": "Developer"
+      }
+    ],
+    "require": {
+      "php": "^8.2",
+      "php-webdriver/webdriver": "^1.15"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "infection/infection": "^0.29",
+        "phpstan/phpstan": "^2",
+        "phpunit/phpunit": "^10.0 || ^11.0",
+        "rector/rector": "^2",
+        "squizlabs/php_codesniffer": "^3.10"
+    },
+    "autoload": {
+      "psr-4": {
+        "Daycry\\PHPUnit\\Selenium\\": "src/"
+      }
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "Daycry\\PHPUnit\\Selenium\\Tests\\": "tests/"
+      }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "infection/extension-installer": true
+        }
+    },
+    "scripts": {
+        "post-update-cmd": [
+            "@setup"
+        ],
+        "setup": [
+            "@composer dump-autoload --optimize"
+        ],
+        "analyze": [
+            "Composer\\Config::disableProcessTimeout",
+            "@phpstan",
+            "@rector-check"
+        ],
+        "ci": [
+            "Composer\\Config::disableProcessTimeout",
+            "@cs-check",
+            "@test",
+            "@analyze"
+        ],
+        "cs-check": "vendor/bin/php-cs-fixer fix --ansi --verbose --dry-run --diff",
+        "cs-fix": "vendor/bin/php-cs-fixer fix --ansi --verbose --diff",
+        "phpstan": "vendor/bin/phpstan analyse --ansi",
+        "rector-check": "vendor/bin/rector process --dry-run --ansi",
+        "rector-fix": "vendor/bin/rector process --ansi",
+        "mutate": [
+            "Composer\\Config::disableProcessTimeout",
+            "@test-coverage",
+            "vendor/bin/infection --threads=2 --coverage=build/coverage --ansi"
+        ],
+        "mutate-show": [
+            "Composer\\Config::disableProcessTimeout", 
+            "@test-coverage",
+            "vendor/bin/infection --threads=2 --coverage=build/coverage --show-mutations --ansi"
+        ],
+        "quality": [
+            "@cs-check",
+            "@phpstan",
+            "@rector-check"
+        ],
+        "style": "@cs-fix",
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "vendor/bin/phpunit --colors=always"
+        ],
+        "test-coverage": [
+            "Composer\\Config::disableProcessTimeout",
+            "vendor/bin/phpunit --colors=always --coverage-html=build/coverage"
+        ],
+        "test-coverage-text": [
+            "Composer\\Config::disableProcessTimeout",
+            "vendor/bin/phpunit --colors=always --coverage-text"
+        ]
+    }
+  }
