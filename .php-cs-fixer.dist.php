@@ -14,7 +14,7 @@ return (new Config())
     ->setRiskyAllowed(true)
     ->setRules([
         '@PSR12' => true,
-        '@PHP82Migration' => true,
+        '@PHP8x2Migration' => true,
         'array_syntax' => ['syntax' => 'short'],
         'declare_strict_types' => true,
         'no_unused_imports' => true,
