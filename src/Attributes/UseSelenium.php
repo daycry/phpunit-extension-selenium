@@ -7,7 +7,8 @@ namespace Daycry\PHPUnit\Selenium\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class UseSelenium {
+final class UseSelenium
+{
     public function __construct()
     {
     }

@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Daycry\PHPUnit\Selenium;
 
 use Daycry\PHPUnit\Selenium\Subscribers\ConfigurationSubscriber;
+use Daycry\PHPUnit\Selenium\Subscribers\FailedSubscriber;
 use Daycry\PHPUnit\Selenium\Subscribers\FinishSeleniumSubscriber;
 use Daycry\PHPUnit\Selenium\Subscribers\StartSeleniumSubscriber;
 use PHPUnit\Runner\Extension\Extension;
-use PHPUnit\TextUI\Configuration\Configuration;
 use PHPUnit\Runner\Extension\Facade;
 use PHPUnit\Runner\Extension\ParameterCollection;
+use PHPUnit\TextUI\Configuration\Configuration;
 
 class SeleniumExtension implements Extension
 {
@@ -18,23 +19,24 @@ class SeleniumExtension implements Extension
     {
         try {
             $facade->registerSubscriber(
-    new ConfigurationSubscriber(
-                $this->parameter($parameters, 'host') ?? 'http://localhost:4444/wd/hub',
-                $this->parameterAsArray($parameters, 'options') ?? ['--start-maximized', '--disable-infobars', '--disable-extensions'],
-                $this->parameter($parameters, 'browser-name') ?? 'chrome',
-                $this->parameter($parameters, 'platform') ?? 'linux',
-                $this->parameterAsBool($parameters, 'accept-insecure-certs') ?? true,
-                $this->parameterAsBool($parameters, 'screenshot') ?? false,
-                $this->parameterAsBool($parameters, 'allure') ?? false,
-                $this->parameter($parameters, 'browser-version') ?? null,
-                $this->parameter($parameters, 'screenshot-path') ?? null,
-                $this->parameter($parameters, 'page-load-strategy') ?? null,
-                $this->parameter($parameters, 'user-agent') ?? null,
+                new ConfigurationSubscriber(
+                    $this->parameter($parameters, 'host') ?: 'http://localhost:4444/wd/hub',
+                    $this->parameterAsArray($parameters, 'options') ?: ['--start-maximized', '--disable-infobars', '--disable-extensions'],
+                    $this->parameter($parameters, 'browser-name') ?: 'chrome',
+                    $this->parameter($parameters, 'platform-name') ?: 'linux',
+                    $this->parameterAsBool($parameters, 'accept-insecure-certs') ?: true,
+                    $this->parameterAsBool($parameters, 'screenshot') ?: false,
+                    $this->parameterAsBool($parameters, 'allure') ?: false,
+                    $this->parameter($parameters, 'browser-version'),
+                    $this->parameter($parameters, 'screenshot-path'),
+                    $this->parameter($parameters, 'page-load-strategy'),
+                    $this->parameter($parameters, 'user-agent'),
                 )
             );
-        
+
             $facade->registerSubscriber(new StartSeleniumSubscriber());
             $facade->registerSubscriber(new FinishSeleniumSubscriber());
+            $facade->registerSubscriber(new FailedSubscriber());
         } catch (\Throwable $e) {
             echo "\n[SELENIUM EXTENSION] Failed to initialize ConfigurationSubscriber: {$e->getMessage()} : {$e->getTraceAsString()}\n";
             exit;

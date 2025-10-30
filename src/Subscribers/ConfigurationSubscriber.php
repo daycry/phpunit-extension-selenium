@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Daycry\PHPUnit\Selenium\Subscribers;
 
-use PHPUnit\Event\TestRunner\ExecutionStarted;
-use PHPUnit\Event\TestRunner\ExecutionStartedSubscriber;
-use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Daycry\PHPUnit\Selenium\Libraries\SeleniumDriver;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
+use PHPUnit\Event\TestRunner\ExecutionStarted;
+use PHPUnit\Event\TestRunner\ExecutionStartedSubscriber;
 
 /**
  * @codeCoverageIgnore
@@ -22,7 +23,7 @@ class ConfigurationSubscriber implements ExecutionStartedSubscriber
         private readonly string $host,
         private readonly array $options,
         private readonly string $browserName,
-        private readonly string $platform,
+        private readonly string $platformName,
         private readonly bool $acceptInsecureCerts = true,
         private readonly bool $screenshot = false,
         private readonly bool $allure = false,
@@ -42,38 +43,32 @@ class ConfigurationSubscriber implements ExecutionStartedSubscriber
             }
         }
 
-        $capabilities = DesiredCapabilities::chrome();
-        $capabilities->setCapability(ChromeOptions::CAPABILITY_W3C, $options);
-        $capabilities->setCapability('browserName', $this->browserName);
-        $capabilities->setCapability('browserVersion', $this->browserVersion);
-        $capabilities->setCapability('platform', $this->platform);
-        $capabilities->setCapability('acceptInsecureCerts', $this->acceptInsecureCerts);
-        $capabilities->setCapability('pageLoadStrategy', $this->pageLoadStrategy);
+        $capabilitiesArray = [];
+        $capabilitiesArray[ChromeOptions::CAPABILITY_W3C] = $options;
+        $capabilitiesArray['browserName'] = $this->browserName;
+        if ($this->browserVersion !== null) {
+            $capabilitiesArray['browserVersion'] = $this->browserVersion;
+        }
+        $capabilitiesArray['platformName'] = $this->platformName;
+        $capabilitiesArray['acceptInsecureCerts'] = $this->acceptInsecureCerts;
+        if ($this->pageLoadStrategy !== null) {
+            $capabilitiesArray['pageLoadStrategy'] = $this->pageLoadStrategy;
+        }
         if ($this->userAgent !== null) {
-            $capabilities->setCapability('userAgent', $this->userAgent);
+            $capabilitiesArray['userAgent'] = $this->userAgent;
         }
 
-        self::$driver = RemoteWebDriver::create($this->host, $capabilities);
-    }
+        $capabilities = new DesiredCapabilities($capabilitiesArray);
 
-    public static function getDriver(bool $exception = true): ?RemoteWebDriver
-    {
-        if (!self::$driver) {
-            if($exception) {
-                throw new \RuntimeException('Selenium WebDriver not initialized');
-            }
-
-            return null;
+        if ($this->screenshot === true && $this->screenshotPath !== null) {
+            SeleniumDriver::setScreenshotPath($this->screenshotPath);
         }
 
-        return self::$driver;
-    }
+        SeleniumDriver::setHost($this->host);
+        SeleniumDriver::setCapabilities($capabilities);
 
-    public static function quitDriver(): void
-    {
-        if (self::$driver !== null) {
-            self::$driver->quit();
-            self::$driver = null;
+        if ($this->screenshot === true && $this->screenshotPath !== null) {
+            SeleniumDriver::setScreenshotPath($this->screenshotPath);
         }
     }
 }
