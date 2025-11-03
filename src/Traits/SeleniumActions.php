@@ -12,7 +12,7 @@ use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 
 trait SeleniumActions
-{
+{   
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();

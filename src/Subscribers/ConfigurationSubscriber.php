@@ -7,7 +7,6 @@ namespace Daycry\PHPUnit\Selenium\Subscribers;
 use Daycry\PHPUnit\Selenium\Libraries\SeleniumDriver;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
-use Facebook\WebDriver\Remote\RemoteWebDriver;
 use PHPUnit\Event\TestRunner\ExecutionStarted;
 use PHPUnit\Event\TestRunner\ExecutionStartedSubscriber;
 
@@ -16,9 +15,6 @@ use PHPUnit\Event\TestRunner\ExecutionStartedSubscriber;
  */
 class ConfigurationSubscriber implements ExecutionStartedSubscriber
 {
-    /** @var RemoteWebDriver|null */
-    private static $driver;
-
     public function __construct(
         private readonly string $host,
         private readonly array $options,
@@ -32,6 +28,16 @@ class ConfigurationSubscriber implements ExecutionStartedSubscriber
         private readonly ?string $pageLoadStrategy = null,
         private readonly ?string $userAgent = null,
     ) {
+        // Validaciones básicas
+        if (filter_var($this->host, FILTER_VALIDATE_URL) === false) {
+            throw new \InvalidArgumentException('Host Selenium inválido: ' . $this->host);
+        }
+
+        if ($this->screenshot && $this->screenshotPath !== null) {
+            if (trim($this->screenshotPath) === '') {
+                throw new \InvalidArgumentException('Ruta de screenshot vacía.');
+            }
+        }
     }
 
     public function notify(ExecutionStarted $event): void
@@ -60,14 +66,10 @@ class ConfigurationSubscriber implements ExecutionStartedSubscriber
 
         $capabilities = new DesiredCapabilities($capabilitiesArray);
 
-        if ($this->screenshot === true && $this->screenshotPath !== null) {
-            SeleniumDriver::setScreenshotPath($this->screenshotPath);
-        }
-
         SeleniumDriver::setHost($this->host);
         SeleniumDriver::setCapabilities($capabilities);
 
-        if ($this->screenshot === true && $this->screenshotPath !== null) {
+        if ($this->screenshot && $this->screenshotPath !== null) {
             SeleniumDriver::setScreenshotPath($this->screenshotPath);
         }
     }

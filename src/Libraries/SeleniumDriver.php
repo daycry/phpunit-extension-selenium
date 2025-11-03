@@ -13,6 +13,7 @@ class SeleniumDriver
     private static ?WebDriverCapabilities $capabilities = null;
     private static ?RemoteWebDriver $driver = null;
     private static ?string $screenshotPath = null;
+    private static ?string $lastError = null;
 
     public static function setHost(string $host): void
     {
@@ -40,7 +41,7 @@ class SeleniumDriver
             try {
                 self::$driver = RemoteWebDriver::create(self::$host, self::$capabilities);
             } catch (\Throwable $e) {
-                echo "\n[SELENIUM DRIVER] Failed to initialize: {$e->getMessage()}\n";
+                self::$lastError = $e->getMessage();
             }
         }
     }
@@ -64,5 +65,15 @@ class SeleniumDriver
             self::$driver->quit();
             self::$driver = null;
         }
+    }
+
+    public static function isInitialized(): bool
+    {
+        return self::$driver !== null;
+    }
+
+    public static function getLastError(): ?string
+    {
+        return self::$lastError;
     }
 }
