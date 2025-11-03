@@ -4,7 +4,9 @@
 
 # Installation
 
-> composer require --dev daycry/phpunit-extension-selenium
+```
+composer require --dev daycry/phpunit-extension-selenium
+```
 
 ## Key Features
 
