@@ -2,6 +2,10 @@
 
 > A lightweight PHPUnit extension that enables opt-in Selenium WebDriver tests using a PHP 8 Attribute (`UseSelenium`). The driver is lazily created only for tests that explicitly request it.
 
+# Installation
+
+> composer require --dev daycry/phpunit-extension-selenium
+
 ## Key Features
 
 - Attribute-based opt-in: `#[UseSelenium]` at class or method level
