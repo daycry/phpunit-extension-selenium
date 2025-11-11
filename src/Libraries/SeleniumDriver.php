@@ -20,6 +20,11 @@ class SeleniumDriver
         self::$host = $host;
     }
 
+    public static function getHost(): ?string
+    {
+        return self::$host;
+    }
+
     public static function setCapabilities(WebDriverCapabilities $capabilities): void
     {
         self::$capabilities = $capabilities;

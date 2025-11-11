@@ -73,7 +73,7 @@ trait SeleniumActions
 
     protected function waitElement(string $key, string $attr, ?string $compareText = null): void
     {
-        SeleniumDriver::getDriver()->wait(10)->until(
+        SeleniumDriver::getDriver()->wait(30)->until(
             WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::{$attr}($key)),
         );
 
@@ -83,7 +83,21 @@ trait SeleniumActions
         }
     }
 
-    protected function waitPageLoaded(string $urlPart, int $timeout = 10): void
+    protected function waitDialogUntilOpen(string $key, string $attr): void
+    {
+        $dialog = SeleniumDriver::getDriver()->wait(30)->until(
+            WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::{$attr}($key)),
+        );
+
+        SeleniumDriver::getDriver()->wait(30)->until(
+            function() use ($dialog) {
+                //return $dialog->isDisplayed();
+                return SeleniumDriver::getDriver()->executeScript("return arguments[0].open === true;", [$dialog]);
+            }
+        );
+    }
+
+    protected function waitPageLoaded(string $urlPart, int $timeout = 30): void
     {
         SeleniumDriver::getDriver()->wait($timeout)->until(
             // Opción A: Esperar a que un elemento (ej. el título del dashboard) sea visible
