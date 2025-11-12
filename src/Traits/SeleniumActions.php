@@ -40,9 +40,9 @@ trait SeleniumActions
     // attr = cssSelector, id, name, xpath, className, tagName, linkText, partialLinkText
     // cssSelector('button.btn-primary')
     // xpath("//button[text()='Iniciar Sesión']")
-    protected function clickElementBy(string $key, $attr = 'id', ?Closure $callback = null): void
+    protected function clickElementBy(string $key, $attr = 'id'): void
     {
-        SeleniumDriver::getDriver()->wait(10)->until(
+        SeleniumDriver::getDriver()->wait(30)->until(
             WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::{$attr}($key)),
         );
         $button = SeleniumDriver::getDriver()->findElement(WebDriverBy::{$attr}($key));
@@ -71,16 +71,39 @@ trait SeleniumActions
         SeleniumDriver::getDriver()->get($url);
     }
 
-    protected function waitElement(string $key, string $attr, ?string $compareText = null): void
+    protected function waitElement(string $key, string $attr, ?array $options = null): void
     {
         SeleniumDriver::getDriver()->wait(30)->until(
             WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::{$attr}($key)),
         );
 
-        if ($compareText) {
+        if($options && isset($options['notHasContentAttribute']) && is_array($options['notHasContentAttribute']))
+        {
+            SeleniumDriver::getDriver()->wait(30)->until(function() use ($key, $attr,$options) {
+                try {
+                    $el = SeleniumDriver::getDriver()->findElement(WebDriverBy::{$attr}($key));
+                    $values = $el->getAttribute($options['notHasContentAttribute']['key']) ?? '';
+                    return !preg_match('/\b' . preg_quote($options['notHasContentAttribute']['value'], '/') . '\b/', $values);
+                } catch (WebDriverException $e) {
+
+                }
+            });
+        }
+
+        if ($options && isset($options['compareText'])) {
+            $compareText = $options['compareText'];
             $successText = SeleniumDriver::getDriver()->findElement(WebDriverBy::{$attr}($key))->getText();
             $this->assertStringContainsString($compareText, $successText);
         }
+    }
+
+    protected function getValueFromElement(string $key, string $type = 'id', string $attr = 'value', ?array $options = null): string
+    {
+        $this->waitElement($key, $type, $options);
+
+        $inputField = SeleniumDriver::getDriver()->findElement(WebDriverBy::{$type}($key));
+
+        return $inputField->getAttribute($attr);
     }
 
     protected function waitDialogUntilOpen(string $key, string $attr): void
