@@ -73,9 +73,14 @@ trait SeleniumActions
 
     protected function waitElement(string $key, string $attr, ?array $options = null): void
     {
-        SeleniumDriver::getDriver()->wait(30)->until(
-            WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::{$attr}($key)),
-        );
+        try {
+            SeleniumDriver::getDriver()->wait(30)->until(
+                WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::{$attr}($key)),
+            );
+        } catch (\Facebook\WebDriver\Exception\TimeoutException $e) {
+            // Aquí puedes lanzar tu propia excepción con un mensaje mejorado
+            throw new \Exception("Step fallido: No se encontró el elemento '$key' ($attr) tras esperar.", 0, $e);
+        }
 
         if($options && isset($options['notHasContentAttribute']) && is_array($options['notHasContentAttribute']))
         {
