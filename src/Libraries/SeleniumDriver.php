@@ -47,6 +47,9 @@ class SeleniumDriver
                 self::$driver = RemoteWebDriver::create(self::$host, self::$capabilities);
             } catch (\Throwable $e) {
                 self::$lastError = $e->getMessage();
+                self::$driver    = null;
+
+                throw $e;
             }
         }
     }
