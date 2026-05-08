@@ -81,28 +81,46 @@ of disk space.
 
 ## Allure
 
-The `allure-framework/allure-phpunit` package is declared as `suggest`. To
-enable it:
+Allure integration is **opt-in**. The library does not pull
+`allure-framework/allure-phpunit` into your application — it only
+references the `Qameta\Allure\Allure` class behind a `class_exists()`
+guard, so the integration is a no-op until you install the package.
+
+To enable it in your project:
 
 ```bash
 composer require --dev allure-framework/allure-phpunit
 ```
 
+Then turn it on:
+
 ```xml
-<parameter name="allure" value="true"/>
+<parameter name="allure"      value="true"/>
 <parameter name="report-path" value="build/allure-results"/>
 ```
 
-When the optional package is installed and `allure=true`,
-`AllureReporter` becomes active. On a failure the
-`FailedTestSubscriber` calls:
+or via env:
 
-1. `attachFile('screenshot', $screenshotPath, 'image/png')`
-2. `attachText('browser-console', json_encode($logs), 'application/json')`
-   gathered through `BrowserLogCollector`.
+```bash
+SELENIUM_ALLURE=true SELENIUM_REPORT_PATH=build/allure-results vendor/bin/phpunit
+```
 
-If the package is not installed, the reporter degrades to a no-op — your
-tests keep running unchanged.
+When the package is installed and `allure=true`, `AllureReporter` becomes
+active and `FailedTestSubscriber` will, on every failed test:
+
+1. `attachFile('screenshot', $screenshotPath, 'image/png')` — the failure
+   screenshot captured by `ScreenshotService`.
+2. `attachText('browser-console', json_encode($logs), 'application/json')` —
+   the structured browser/driver log returned by `BrowserLogCollector`.
+
+If the package is not installed, the reporter degrades to a no-op and the
+test outcome is unchanged. You'll still get the screenshot on disk and
+the PSR-3 log entries.
+
+> Note for **library contributors**: this repo lists the package as a
+> `require-dev` so PHPStan can analyse `AllureReporter` against the real
+> class signatures. End users see only the `suggest` entry and remain
+> free to opt out entirely.
 
 ## Browser console logs
 
