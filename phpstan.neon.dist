@@ -3,6 +3,7 @@ includes:
 
 parameters:
     level: 6
+    phpVersion: 80200
     paths:
         - src
         - tests
@@ -10,3 +11,12 @@ parameters:
         - vendor
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: true
+    ignoreErrors:
+        # Optional dependency: allure-framework/allure-phpunit. The class is
+        # only present when users install it; the runtime guards every call
+        # with class_exists(). Local dev usually has it installed, so we mark
+        # the rule as not requiring a match.
+        -
+            message: '#Call to static method attachment\(\) on an unknown class Qameta\\Allure\\Allure\.#'
+            path: src/Reporting/AllureReporter.php
+            reportUnmatched: false
