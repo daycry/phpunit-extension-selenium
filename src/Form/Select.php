@@ -12,9 +12,9 @@ namespace Daycry\PHPUnit\Selenium\Form;
  */
 final readonly class Select
 {
-    public const string BY_VALUE = 'value';
-    public const string BY_LABEL = 'label';
-    public const string BY_INDEX = 'index';
+    public const BY_VALUE = 'value';
+    public const BY_LABEL = 'label';
+    public const BY_INDEX = 'index';
 
     private function __construct(
         public string $strategy,

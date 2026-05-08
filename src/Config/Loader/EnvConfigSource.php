@@ -6,9 +6,9 @@ namespace Daycry\PHPUnit\Selenium\Config\Loader;
 
 final class EnvConfigSource implements ConfigSource
 {
-    public const int PRIORITY = 100;
+    public const PRIORITY = 100;
 
-    private const array MAP = [
+    private const MAP = [
         'SELENIUM_HOST' => 'host',
         'SELENIUM_BROWSER' => 'browser-name',
         'SELENIUM_BROWSER_VERSION' => 'browser-version',

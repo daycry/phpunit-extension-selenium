@@ -8,9 +8,9 @@ use PHPUnit\Runner\Extension\ParameterCollection;
 
 final readonly class XmlConfigSource implements ConfigSource
 {
-    public const int PRIORITY = 50;
+    public const PRIORITY = 50;
 
-    private const array KEYS = [
+    private const KEYS = [
         'host',
         'options',
         'browser-name',

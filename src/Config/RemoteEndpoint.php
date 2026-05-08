@@ -8,7 +8,7 @@ use Daycry\PHPUnit\Selenium\Exception\ConfigurationException;
 
 final readonly class RemoteEndpoint
 {
-    public const string DEFAULT_HOST = 'http://localhost:4444/wd/hub';
+    public const DEFAULT_HOST = 'http://localhost:4444/wd/hub';
 
     public function __construct(
         public string $host = self::DEFAULT_HOST,

@@ -25,7 +25,7 @@ use Psr\Log\NullLogger;
  */
 final class ContainerBuilder
 {
-    public const string CONFIG_SERVICE = 'selenium.config';
+    public const CONFIG_SERVICE = 'selenium.config';
 
     /**
      * @param list<ConfigSource> $sources Highest priority first overrides lower; the

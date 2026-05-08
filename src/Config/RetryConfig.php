@@ -12,11 +12,11 @@ use Throwable;
 
 final readonly class RetryConfig
 {
-    public const int DEFAULT_MAX_ATTEMPTS = 1;
-    public const int DEFAULT_INITIAL_DELAY_MS = 100;
-    public const float DEFAULT_MULTIPLIER = 2.0;
-    public const int DEFAULT_MAX_DELAY_MS = 5_000;
-    public const float DEFAULT_JITTER = 0.1;
+    public const DEFAULT_MAX_ATTEMPTS = 1;
+    public const DEFAULT_INITIAL_DELAY_MS = 100;
+    public const DEFAULT_MULTIPLIER = 2.0;
+    public const DEFAULT_MAX_DELAY_MS = 5_000;
+    public const DEFAULT_JITTER = 0.1;
 
     /**
      * @param list<class-string<Throwable>> $retryableExceptions

@@ -8,11 +8,11 @@ use Daycry\PHPUnit\Selenium\Exception\ConfigurationException;
 
 final readonly class TimeoutConfig
 {
-    public const int DEFAULT_PAGE_LOAD_MS = 30_000;
-    public const int DEFAULT_SCRIPT_MS = 30_000;
-    public const int DEFAULT_IMPLICIT_WAIT_MS = 0;
-    public const int DEFAULT_EXPLICIT_WAIT_MS = 30_000;
-    public const int DEFAULT_POLL_INTERVAL_MS = 250;
+    public const DEFAULT_PAGE_LOAD_MS = 30_000;
+    public const DEFAULT_SCRIPT_MS = 30_000;
+    public const DEFAULT_IMPLICIT_WAIT_MS = 0;
+    public const DEFAULT_EXPLICIT_WAIT_MS = 30_000;
+    public const DEFAULT_POLL_INTERVAL_MS = 250;
 
     public function __construct(
         public int $implicitWaitMs = self::DEFAULT_IMPLICIT_WAIT_MS,
