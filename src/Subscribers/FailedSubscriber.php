@@ -7,6 +7,7 @@ namespace Daycry\PHPUnit\Selenium\Subscribers;
 use Daycry\PHPUnit\Selenium\Libraries\SeleniumDriver;
 use Daycry\PHPUnit\Selenium\Traits\AttributeResolverTrait;
 use Daycry\PHPUnit\Selenium\Traits\SeleniumActions;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
 use PHPUnit\Event\Test\Failed;
 use PHPUnit\Event\Test\FailedSubscriber as PHPUnitFailedSubscriber;
 
@@ -38,14 +39,12 @@ final class FailedSubscriber implements PHPUnitFailedSubscriber
 
             $screenshotPath = SeleniumDriver::getScreenshotPath();
 
-            if ($screenshotPath !== null && SeleniumDriver::getDriver() !== null) {
+            if ($screenshotPath !== null && SeleniumDriver::getDriver() instanceof RemoteWebDriver) {
                 $fileName = str_replace(['\\', '::'], '_', $testName) . '_' . date('Ymd_His') . '.png';
                 $this->takeScreenshot($fileName);
             }
 
             // Puedes loguear la falla, enviar una notificación, etc.
         }
-
-        return;
     }
 }

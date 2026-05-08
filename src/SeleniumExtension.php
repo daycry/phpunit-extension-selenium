@@ -4,77 +4,64 @@ declare(strict_types=1);
 
 namespace Daycry\PHPUnit\Selenium;
 
-use Daycry\PHPUnit\Selenium\Subscribers\ConfigurationSubscriber;
-use Daycry\PHPUnit\Selenium\Subscribers\FailedSubscriber;
-use Daycry\PHPUnit\Selenium\Subscribers\FinishSeleniumSubscriber;
-use Daycry\PHPUnit\Selenium\Subscribers\StartSeleniumSubscriber;
+use Daycry\PHPUnit\Selenium\Attribute\Resolver\TestAttributeResolver;
+use Daycry\PHPUnit\Selenium\Config\Loader\EnvConfigSource;
+use Daycry\PHPUnit\Selenium\Config\Loader\XmlConfigSource;
+use Daycry\PHPUnit\Selenium\Config\SeleniumConfig;
+use Daycry\PHPUnit\Selenium\Container\ContainerBuilder;
+use Daycry\PHPUnit\Selenium\Exception\ExtensionBootstrapException;
+use Daycry\PHPUnit\Selenium\Reporting\AllureReporter;
+use Daycry\PHPUnit\Selenium\Reporting\BrowserLogCollector;
+use Daycry\PHPUnit\Selenium\Screenshot\ScreenshotService;
+use Daycry\PHPUnit\Selenium\Session\SessionManager;
+use Daycry\PHPUnit\Selenium\Subscriber\BootstrapSubscriber;
+use Daycry\PHPUnit\Selenium\Subscriber\FailedTestSubscriber;
+use Daycry\PHPUnit\Selenium\Subscriber\FinishTestSubscriber;
+use Daycry\PHPUnit\Selenium\Subscriber\ShutdownSubscriber;
+use Daycry\PHPUnit\Selenium\Subscriber\StartTestSubscriber;
 use PHPUnit\Runner\Extension\Extension;
 use PHPUnit\Runner\Extension\Facade;
 use PHPUnit\Runner\Extension\ParameterCollection;
 use PHPUnit\TextUI\Configuration\Configuration;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
-class SeleniumExtension implements Extension
+final class SeleniumExtension implements Extension
 {
     public function bootstrap(Configuration $configuration, Facade $facade, ParameterCollection $parameters): void
     {
         try {
-            $facade->registerSubscriber(
-                new ConfigurationSubscriber(
-                    $this->parameter($parameters, 'host') ?: 'http://localhost:4444/wd/hub',
-                    $this->parameterAsArray($parameters, 'options') ?: ['--start-maximized', '--disable-infobars', '--disable-extensions'],
-                    $this->parameter($parameters, 'browser-name') ?: 'chrome',
-                    $this->parameter($parameters, 'platform-name') ?: 'linux',
-                    $this->parameterAsBool($parameters, 'accept-insecure-certs') ?: true,
-                    $this->parameterAsBool($parameters, 'screenshot') ?: false,
-                    $this->parameterAsBool($parameters, 'allure') ?: false,
-                    $this->parameter($parameters, 'browser-version'),
-                    $this->parameter($parameters, 'screenshot-path'),
-                    $this->parameter($parameters, 'page-load-strategy'),
-                    $this->parameter($parameters, 'user-agent'),
-                )
+            $container = (new ContainerBuilder())->build([
+                new XmlConfigSource($parameters),
+                new EnvConfigSource(),
+            ]);
+
+            /** @var SessionManager $sessions */
+            $sessions = $container->get(SessionManager::class);
+            /** @var SeleniumConfig $config */
+            $config = $container->get(ContainerBuilder::CONFIG_SERVICE);
+            /** @var TestAttributeResolver $resolver */
+            $resolver = $container->get(TestAttributeResolver::class);
+            /** @var ScreenshotService $screenshots */
+            $screenshots = $container->get(ScreenshotService::class);
+            /** @var LoggerInterface $logger */
+            $logger = $container->get(LoggerInterface::class);
+            /** @var AllureReporter $allure */
+            $allure = $container->get(AllureReporter::class);
+            /** @var BrowserLogCollector $logs */
+            $logs = $container->get(BrowserLogCollector::class);
+
+            $facade->registerSubscriber(new BootstrapSubscriber($config, $sessions, $logger));
+            $facade->registerSubscriber(new StartTestSubscriber($config, $sessions, $resolver, logger: $logger));
+            $facade->registerSubscriber(new FailedTestSubscriber($sessions, $screenshots, $logger, $allure, $logs));
+            $facade->registerSubscriber(new FinishTestSubscriber($sessions, $logger));
+            $facade->registerSubscriber(new ShutdownSubscriber($sessions, $logger));
+        } catch (Throwable $e) {
+            throw new ExtensionBootstrapException(
+                \sprintf('[Selenium] Failed to bootstrap extension: %s', $e->getMessage()),
+                0,
+                $e,
             );
-
-            $facade->registerSubscriber(new StartSeleniumSubscriber());
-            $facade->registerSubscriber(new FinishSeleniumSubscriber());
-            $facade->registerSubscriber(new FailedSubscriber());
-        } catch (\Throwable $e) {
-            echo "\n[SELENIUM EXTENSION] Failed to initialize ConfigurationSubscriber: {$e->getMessage()} : {$e->getTraceAsString()}\n";
-            exit;
         }
-    }
-
-    private function parameter(ParameterCollection $parameters, string $name): ?string
-    {
-        if ($parameters->has($name)) {
-            return $parameters->get($name);
-        }
-
-        return null;
-    }
-
-    private function parameterAsBool(ParameterCollection $parameters, string $name): bool
-    {
-        $value = $this->parameter($parameters, $name);
-
-        if ($value === null) {
-            return false;
-        }
-
-        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
-    }
-
-    /** @return array<string>|null */
-    private function parameterAsArray(ParameterCollection $parameters, string $name): ?array
-    {
-        $value = $this->parameter($parameters, $name);
-
-        if ($value === null || trim($value) === '') {
-            return null;
-        }
-
-        return array_map(
-            fn (string $value): string => trim($value),
-            explode(",", $value)
-        );
     }
 }

@@ -1,0 +1,33 @@
+{
+  "$schema": "vendor/infection/infection/resources/schema.json",
+  "source": {
+    "directories": [
+      "src"
+    ],
+    "excludes": [
+      "Subscriber",
+      "SeleniumExtension.php",
+      "Subscribers"
+    ]
+  },
+  "logs": {
+    "text": "build/infection/log.txt",
+    "html": "build/infection/index.html",
+    "summary": "build/infection/summary.log",
+    "json": "build/infection/results.json",
+    "perMutator": "build/infection/per-mutator.md",
+    "github": true
+  },
+  "tmpDir": "build/infection/tmp",
+  "minMsi": 70,
+  "minCoveredMsi": 80,
+  "timeout": 30,
+  "mutators": {
+    "@default": true,
+    "global-ignoreSourceCodeByRegex": [
+      "throw new .*Exception.*"
+    ]
+  },
+  "testFramework": "phpunit",
+  "testFrameworkOptions": "--testsuite=Unit"
+}

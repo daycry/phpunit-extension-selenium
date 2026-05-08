@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -l src/SeleniumExtension.php)",
+      "Bash(php -l src/Traits/SeleniumActions.php)",
+      "Bash(php -l src/Exception/SeleniumException.php)",
+      "Bash(php -l src/Exception/ExtensionBootstrapException.php)",
+      "Bash(php -l src/Exception/ScreenshotException.php)"
+    ]
+  }
+}

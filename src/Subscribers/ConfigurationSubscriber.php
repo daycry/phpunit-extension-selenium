@@ -7,6 +7,7 @@ namespace Daycry\PHPUnit\Selenium\Subscribers;
 use Daycry\PHPUnit\Selenium\Libraries\SeleniumDriver;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use InvalidArgumentException;
 use PHPUnit\Event\TestRunner\ExecutionStarted;
 use PHPUnit\Event\TestRunner\ExecutionStartedSubscriber;
 
@@ -22,7 +23,6 @@ class ConfigurationSubscriber implements ExecutionStartedSubscriber
         private readonly string $platformName,
         private readonly bool $acceptInsecureCerts = true,
         private readonly bool $screenshot = false,
-        private readonly bool $allure = false,
         private readonly ?string $browserVersion = null,
         private readonly ?string $screenshotPath = null,
         private readonly ?string $pageLoadStrategy = null,
@@ -30,13 +30,11 @@ class ConfigurationSubscriber implements ExecutionStartedSubscriber
     ) {
         // Validaciones básicas
         if (filter_var($this->host, FILTER_VALIDATE_URL) === false) {
-            throw new \InvalidArgumentException('Host Selenium inválido: ' . $this->host);
+            throw new InvalidArgumentException('Host Selenium inválido: ' . $this->host);
         }
 
-        if ($this->screenshot && $this->screenshotPath !== null) {
-            if (trim($this->screenshotPath) === '') {
-                throw new \InvalidArgumentException('Ruta de screenshot vacía.');
-            }
+        if ($this->screenshot && $this->screenshotPath !== null && trim($this->screenshotPath) === '') {
+            throw new InvalidArgumentException('Ruta de screenshot vacía.');
         }
     }
 

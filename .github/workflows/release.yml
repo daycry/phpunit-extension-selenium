@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Run tests
+        run: vendor/bin/phpunit --testsuite=Unit
+
+      - name: Run static analysis
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Build SBOM
+        run: composer audit --format=json > build/audit.json || true
+
+      - name: Generate release notes
+        id: notes
+        uses: release-drafter/release-drafter@v6
+        with:
+          tag: ${{ github.ref_name }}
+          publish: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.notes.outputs.body }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            build/audit.json

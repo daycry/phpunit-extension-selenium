@@ -36,16 +36,13 @@ trait AttributeResolverTrait
 
         if ($attributes !== []) {
             return $attributes[0]->newInstance();
-        } else {
-            $class = $method->getDeclaringClass();
-            $attributes = $class->getAttributes(UseSelenium::class);
-
-            if ($attributes) {
-                return $attributes[0]->newInstance();
-            }
-
-            return null;
         }
+        $class = $method->getDeclaringClass();
+        $attributes = $class->getAttributes(UseSelenium::class);
+        if ($attributes !== []) {
+            return $attributes[0]->newInstance();
+        }
+        return null;
 
     }
 }

@@ -6,6 +6,8 @@ namespace Daycry\PHPUnit\Selenium\Libraries;
 
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverCapabilities;
+use RuntimeException;
+use Throwable;
 
 class SeleniumDriver
 {
@@ -42,10 +44,10 @@ class SeleniumDriver
 
     public static function initialize(): void
     {
-        if (self::$driver === null) {
+        if (!self::$driver instanceof RemoteWebDriver) {
             try {
                 self::$driver = RemoteWebDriver::create(self::$host, self::$capabilities);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 self::$lastError = $e->getMessage();
                 self::$driver    = null;
 
@@ -56,9 +58,9 @@ class SeleniumDriver
 
     public static function getDriver(bool $exception = true): ?RemoteWebDriver
     {
-        if (!self::$driver) {
+        if (!self::$driver instanceof RemoteWebDriver) {
             if ($exception) {
-                throw new \RuntimeException('Selenium WebDriver not initialized');
+                throw new RuntimeException('Selenium WebDriver not initialized');
             }
 
             return null;
@@ -69,7 +71,7 @@ class SeleniumDriver
 
     public static function quit(): void
     {
-        if (self::$driver !== null) {
+        if (self::$driver instanceof RemoteWebDriver) {
             self::$driver->quit();
             self::$driver = null;
         }
@@ -77,7 +79,7 @@ class SeleniumDriver
 
     public static function isInitialized(): bool
     {
-        return self::$driver !== null;
+        return self::$driver instanceof RemoteWebDriver;
     }
 
     public static function getLastError(): ?string

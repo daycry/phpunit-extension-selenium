@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Daycry\PHPUnit\Selenium\Traits;
 
-use Closure;
+use Daycry\PHPUnit\Selenium\Exception\ScreenshotException;
 use Daycry\PHPUnit\Selenium\Libraries\SeleniumDriver;
+use Exception;
+use Facebook\WebDriver\Exception\TimeoutException;
 use Facebook\WebDriver\Exception\WebDriverException;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Remote\RemoteWebElement;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 
 trait SeleniumActions
-{   
+{
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
@@ -21,19 +24,28 @@ trait SeleniumActions
     protected function takeScreenshot(string $filename): void
     {
         try {
-            if (SeleniumDriver::getDriver() === null) {
+            if (!SeleniumDriver::getDriver() instanceof RemoteWebDriver) {
                 throw new WebDriverException('WebDriver instance is not available.');
             }
 
-            if (SeleniumDriver::getScreenshotPath() !== null) {
-                $screenshotDir = SeleniumDriver::getScreenshotPath();
-                if (! is_dir($screenshotDir)) {
-                    mkdir($screenshotDir, 0o777, true);
-                }
-                SeleniumDriver::getDriver()->takeScreenshot(rtrim($screenshotDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename);
+            $screenshotDir = SeleniumDriver::getScreenshotPath();
+            if ($screenshotDir === null) {
+                return;
             }
-        } catch (WebDriverException $se) {
-            //echo "\n[SCREENSHOT] Failed to save screenshot: {$se->getMessage()}\n";
+
+            if (! is_dir($screenshotDir) && ! mkdir($screenshotDir, 0o777, true) && ! is_dir($screenshotDir)) {
+                throw new ScreenshotException(\sprintf('Unable to create screenshot directory: %s', $screenshotDir));
+            }
+
+            SeleniumDriver::getDriver()->takeScreenshot(
+                rtrim($screenshotDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename,
+            );
+        } catch (WebDriverException $e) {
+            throw new ScreenshotException(
+                \sprintf('Failed to capture screenshot "%s": %s', $filename, $e->getMessage()),
+                0,
+                $e,
+            );
         }
     }
 
@@ -77,19 +89,18 @@ trait SeleniumActions
             SeleniumDriver::getDriver()->wait(30)->until(
                 WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::{$attr}($key)),
             );
-        } catch (\Facebook\WebDriver\Exception\TimeoutException $e) {
+        } catch (TimeoutException $e) {
             // Aquí puedes lanzar tu propia excepción con un mensaje mejorado
-            throw new \Exception("Step fallido: No se encontró el elemento '$key' ($attr) tras esperar.", 0, $e);
+            throw new Exception("Step fallido: No se encontró el elemento '$key' ($attr) tras esperar.", 0, $e);
         }
 
-        if($options && isset($options['notHasContentAttribute']) && is_array($options['notHasContentAttribute']))
-        {
-            SeleniumDriver::getDriver()->wait(30)->until(function() use ($key, $attr,$options) {
+        if ($options && isset($options['notHasContentAttribute']) && \is_array($options['notHasContentAttribute'])) {
+            SeleniumDriver::getDriver()->wait(30)->until(function () use ($key, $attr, $options) {
                 try {
                     $el = SeleniumDriver::getDriver()->findElement(WebDriverBy::{$attr}($key));
                     $values = $el->getAttribute($options['notHasContentAttribute']['key']) ?? '';
-                    return !preg_match('/\b' . preg_quote($options['notHasContentAttribute']['value'], '/') . '\b/', $values);
-                } catch (WebDriverException $e) {
+                    return !preg_match('/\b' . preg_quote((string) $options['notHasContentAttribute']['value'], '/') . '\b/', $values);
+                } catch (WebDriverException) {
 
                 }
             });
@@ -118,10 +129,9 @@ trait SeleniumActions
         );
 
         SeleniumDriver::getDriver()->wait(30)->until(
-            function() use ($dialog) {
+            fn () =>
                 //return $dialog->isDisplayed();
-                return SeleniumDriver::getDriver()->executeScript("return arguments[0].open === true;", [$dialog]);
-            }
+                SeleniumDriver::getDriver()->executeScript("return arguments[0].open === true;", [$dialog])
         );
     }
 

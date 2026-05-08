@@ -1,0 +1,149 @@
+parameters:
+  paths:
+    - src
+  exclude_files: []
+
+  layers:
+    - name: Attribute
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Attribute(s)?\\.*
+    - name: Browser
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Browser\\.*
+    - name: Locator
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Locator\\.*
+    - name: Wait
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Wait\\.*
+    - name: Asserts
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Asserts\\.*
+    - name: Page
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Page\\.*
+    - name: Form
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Form\\.*
+    - name: Storage
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Storage\\.*
+    - name: Action
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Action\\.*
+    - name: Retry
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Retry\\.*
+    - name: Config
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Config\\.*
+    - name: Container
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Container\\.*
+    - name: Session
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Session\\.*
+    - name: Screenshot
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Screenshot\\.*
+    - name: Reporting
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Reporting\\.*
+    - name: Subscriber
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Subscriber(s)?\\.*
+    - name: Exception
+      collectors:
+        - type: classLike
+          regex: ^Daycry\\PHPUnit\\Selenium\\Exception\\.*
+    - name: Extension
+      collectors:
+        - type: className
+          regex: ^Daycry\\PHPUnit\\Selenium\\SeleniumExtension$
+
+  ruleset:
+    Attribute:
+      - Browser
+      - Config
+      - Exception
+    Locator:
+      - Exception
+    Wait:
+      - Locator
+    Browser:
+      - Action
+      - Config
+      - Exception
+      - Form
+      - Locator
+      - Session
+      - Storage
+      - Wait
+    Page:
+      - Asserts
+      - Browser
+      - Locator
+    Asserts:
+      - Browser
+      - Locator
+      - Session
+    Form:
+      - Exception
+    Storage:
+      - Exception
+    Config:
+      - Browser
+      - Exception
+    Action:
+      - Retry
+    Retry:
+      - Config
+    Session:
+      - Browser
+      - Config
+      - Exception
+    Container:
+      - Attribute
+      - Config
+      - Exception
+      - Reporting
+      - Screenshot
+      - Session
+    Screenshot:
+      - Config
+      - Exception
+      - Session
+    Reporting:
+      - Config
+    Subscriber:
+      - Attribute
+      - Config
+      - Reporting
+      - Screenshot
+      - Session
+    Extension:
+      - Attribute
+      - Config
+      - Container
+      - Exception
+      - Reporting
+      - Screenshot
+      - Session
+      - Subscriber
+    Exception: ~
